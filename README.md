@@ -89,10 +89,6 @@ graph TD
     G --> H((Terminal UI))
     G --> I((JSON))
     G --> J((SARIF))
-    
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style C fill:#bbf,stroke:#333,stroke-width:2px
-    style E fill:#f96,stroke:#333,stroke-width:2px
 ```
 
 1. **NL Semantic Analyzer:** Uses constrained pattern matching to scan `SKILL.md` for prompt injections, social engineering, and instructions that mandate the passing of credentials.
