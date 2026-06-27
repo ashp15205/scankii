@@ -41,7 +41,10 @@ If you download an open-source AI skill from GitHub, you shouldn't trust it blin
    scankii scan ./downloaded-skill/
    ```
 2. **Review the table:** `scankii` will list any CRITICAL or HIGH severity issues.
-3. **Fix it:** `scankii` will suggest exactly how to rewrite the code or the Markdown to fix the vulnerability.
+3. **Fix it:** `scankii` will suggest exactly how to rewrite the code or the Markdown to fix the vulnerability. For automatic fixes (like replacing `print()` with `safe_print()`), you can run the scan with the `--resolve` flag:
+   ```bash
+   scankii scan --resolve ./downloaded-skill/
+   ```
 
 ### Scenario C: Securing Debug Logs with `scankii.runtime`
 Sometimes your code *has* to print debugging info, but you don't want the AI to read the sensitive parts. We include a tool for this directly built into the package!
