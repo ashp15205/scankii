@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# scankii pre-commit hook
+# Scans staged .md, .py, .js, .ts files for credential leakage
+# Exit 1 if any findings above LOW severity are detected
+
+set -euo pipefail
+
+# Get list of staged files with relevant extensions
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(md|py|js|ts)$' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+# Create a temporary directory for staged files
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+# Copy staged files to temp directory preserving structure
+for file in $STAGED_FILES; do
+    dir=$(dirname "$file")
+    mkdir -p "$TMPDIR/$dir"
+    git show ":$file" > "$TMPDIR/$file" 2>/dev/null || true
+done
+
+# Run scankii scan
+if ! command -v scankii &> /dev/null; then
+    echo "⚠️  scankii not installed. Run: pip install scankii"
+    exit 0
+fi
+
+scankii scan "$TMPDIR" --format json 2>/dev/null
+
+# Check for findings above LOW
+python3 -c "
+import json, sys
+
+try:
+    data = json.load(open('findings.json'))
+except FileNotFoundError:
+    sys.exit(0)
+
+levels = {'LOW': 0, 'MEDIUM': 1, 'HIGH': 2, 'CRITICAL': 3}
+findings = data.get('findings', [])
+violations = [f for f in findings if levels.get(f.get('severity', 'LOW'), 0) > 0]
+
+if violations:
+    print(f'❌ scankii: {len(violations)} finding(s) above LOW severity')
+    for v in violations:
+        severity = v.get('severity', 'UNKNOWN')
+        details = v.get('details', {})
+        file_path = details.get('file_path', 'unknown')
+        line = details.get('line_number', '?')
+        print(f'  [{severity}] {file_path}:{line}')
+    sys.exit(1)
+
+print('✅ scankii: No findings above LOW severity')
+"

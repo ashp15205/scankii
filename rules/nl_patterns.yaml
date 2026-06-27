@@ -1,0 +1,46 @@
+# Natural-language patterns for SKILL.md analysis.
+
+severities:
+  credential_action: MEDIUM
+  prompt_injection: CRITICAL
+  social_engineering: HIGH
+
+credential_terms:
+  - api_key
+  - token
+  - password
+  - secret
+  - credential
+  - private_key
+  - auth
+  - oauth
+  - appid
+
+action_verbs:
+  - send
+  - store
+  - embed
+  - log
+  - post
+  - forward
+  - transmit
+  - pass
+  - use
+  - read
+  - write
+  - print
+  - output
+  - export
+  - return
+
+prompt_injection_phrases:
+  - ignore previous instructions
+  - override system prompt
+  - disregard safety guidelines
+  - forget prior context
+
+social_engineering_phrases:
+  - for verification purposes please provide
+  - paste your api key
+  - to continue provide your
+  - enter your token here

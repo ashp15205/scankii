@@ -1,0 +1,110 @@
+# Sink definitions for scankii.
+# Sinks are code paths where sensitive data may leak (logging, network, file I/O).
+
+- id: python-print
+  name: Python print()
+  category: logging
+  language: python
+  severity_multiplier: 1.5
+
+- id: javascript-console-log
+  name: JavaScript console.log()
+  category: logging
+  language: javascript
+  severity_multiplier: 1.5
+
+- id: javascript-console-error
+  name: JavaScript console.error()
+  category: logging
+  language: javascript
+  severity_multiplier: 1.4
+
+- id: python-logger-info
+  name: Python logger.info()
+  category: logging
+  language: python
+  severity_multiplier: 1.3
+
+- id: python-logger-debug
+  name: Python logger.debug()
+  category: logging
+  language: python
+  severity_multiplier: 1.2
+
+- id: python-logging-warning
+  name: Python logging.warning()
+  category: logging
+  language: python
+  severity_multiplier: 1.3
+
+- id: python-logging-info
+  name: Python logging.info()
+  category: logging
+  language: python
+  severity_multiplier: 1.3
+
+- id: python-log-info
+  name: Python log.info()
+  category: logging
+  language: python
+  severity_multiplier: 1.3
+
+- id: python-log-debug
+  name: Python log.debug()
+  category: logging
+  language: python
+  severity_multiplier: 1.2
+
+- id: python-requests-post
+  name: Python requests.post()
+  category: network
+  language: python
+  severity_multiplier: 2.0
+
+- id: python-requests-get
+  name: Python requests.get()
+  category: network
+  language: python
+  severity_multiplier: 1.8
+
+- id: javascript-fetch
+  name: JavaScript fetch()
+  category: network
+  language: javascript
+  severity_multiplier: 2.0
+
+- id: javascript-http-request
+  name: Node.js http.request()
+  category: network
+  language: javascript
+  severity_multiplier: 1.9
+
+- id: python-urllib-urlopen
+  name: Python urllib.urlopen()
+  category: network
+  language: python
+  severity_multiplier: 1.8
+
+- id: python-open
+  name: Python open()
+  category: file
+  language: python
+  severity_multiplier: 1.4
+
+- id: javascript-fs-writefile
+  name: JavaScript fs.writeFile()
+  category: file
+  language: javascript
+  severity_multiplier: 1.5
+
+- id: python-json-dump
+  name: Python json.dump()
+  category: file
+  language: python
+  severity_multiplier: 1.3
+
+- id: python-yaml-dump
+  name: Python yaml.dump()
+  category: file
+  language: python
+  severity_multiplier: 1.3

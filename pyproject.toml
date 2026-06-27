@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scankii"
+version = "1.0.0"
+description = "Scan LLM agent skill directories for credential leakage"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "tree-sitter",
+    "tree-sitter-python",
+    "tree-sitter-javascript",
+    "rich",
+    "pyyaml",
+    "click",
+]
+
+[project.scripts]
+scankii = "scankii.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["scankii"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

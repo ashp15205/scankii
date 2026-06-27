@@ -1,0 +1,12 @@
+This is a Python CLI security tool called scankii.
+It scans LLM agent skill directories for credential leakage.
+It analyzes both natural language (SKILL.md) and source code together.
+It uses tree-sitter for AST analysis.
+It uses the rich library for all terminal output.
+Always write type hints on every function.
+Always write docstrings on every function.
+Always write a corresponding test in /tests for every module.
+Keep every function under 40 lines.
+No external LLM API calls anywhere in the codebase.
+No unnecessary dependencies.
+Credential patterns live in rules/ YAML files, never hardcoded in Python.

@@ -1,0 +1,121 @@
+# Malicious pattern signatures for scankii.
+# These detect potentially malicious behavior in skill code.
+
+- id: reverse-shell-devtcp
+  name: Reverse Shell via /dev/tcp
+  pattern: '/dev/tcp/'
+  severity: CRITICAL
+  attack_category: reverse_shell
+  description: Bash reverse shell using /dev/tcp redirection
+
+- id: reverse-shell-bash-i
+  name: Reverse Shell via bash -i
+  pattern: 'bash\s+-i\s+[>&]'
+  severity: CRITICAL
+  attack_category: reverse_shell
+  description: Interactive bash reverse shell
+
+- id: reverse-shell-netcat
+  name: Reverse Shell via netcat
+  pattern: 'nc\s+(-e|-c)\s+'
+  severity: CRITICAL
+  attack_category: reverse_shell
+  description: Netcat reverse shell with command execution
+
+- id: reverse-shell-mkfifo
+  name: Reverse Shell via mkfifo
+  pattern: 'mkfifo\s+\S+\s*;'
+  severity: CRITICAL
+  attack_category: reverse_shell
+  description: Named pipe based reverse shell
+
+- id: remote-fetch-exec-curl
+  name: Remote Fetch-Execute via curl pipe
+  pattern: 'curl\s+.*\|\s*(ba)?sh'
+  severity: CRITICAL
+  attack_category: remote_fetch_execute
+  description: Downloading and executing remote code via curl pipe to shell
+
+- id: remote-fetch-exec-wget
+  name: Remote Fetch-Execute via wget pipe
+  pattern: 'wget\s+.*\|\s*(ba)?sh'
+  severity: CRITICAL
+  attack_category: remote_fetch_execute
+  description: Downloading and executing remote code via wget pipe to shell
+
+- id: remote-fetch-exec-curl-fssl
+  name: Remote Fetch-Execute via curl -fsSL
+  pattern: 'curl\s+-fsSL\s+\S+.*\|\s*(ba)?sh'
+  severity: CRITICAL
+  attack_category: remote_fetch_execute
+  description: Silent fetch and execute pattern commonly used in malicious scripts
+
+- id: base64-exec-bash
+  name: Base64 Decode to Shell Execution
+  pattern: 'base64\s+(-d|--decode)\s*\|\s*(ba)?sh'
+  severity: CRITICAL
+  attack_category: base64_obfuscation
+  description: Decoding base64 payload and piping to shell
+
+- id: base64-exec-js
+  name: Base64 Decode to JS Eval
+  pattern: 'Buffer\.from\(.*base64.*\).*\.(toString|eval)'
+  severity: CRITICAL
+  attack_category: base64_obfuscation
+  description: Node.js base64 decode chained with execution
+
+- id: env-theft-dotenv
+  name: Environment File Theft
+  pattern: '\.env[^a-zA-Z]'
+  severity: HIGH
+  attack_category: env_theft
+  description: Reading .env file which may contain credentials
+
+- id: env-theft-aws-credentials
+  name: AWS Credentials Theft
+  pattern: '\.aws/credentials'
+  severity: CRITICAL
+  attack_category: env_theft
+  description: Reading AWS credentials file
+
+- id: ssh-key-theft
+  name: SSH Private Key Theft
+  pattern: '\.ssh/id_rsa'
+  severity: CRITICAL
+  attack_category: ssh_key_theft
+  description: Reading SSH private key file
+
+- id: crypto-miner-xmrig
+  name: Crypto Miner (XMRig)
+  pattern: 'xmrig'
+  severity: CRITICAL
+  attack_category: crypto_miner
+  description: XMRig cryptocurrency mining binary
+
+- id: crypto-miner-tmp-exec
+  name: Hidden Executable in /tmp
+  pattern: '/tmp/\.[a-zA-Z]+'
+  severity: HIGH
+  attack_category: crypto_miner
+  description: Hidden executable placed in /tmp directory
+
+- id: keylogger-script
+  name: Keylogger via script command
+  pattern: 'script\s+-q\s+.*\.'
+  severity: CRITICAL
+  attack_category: keylogger
+  description: Using script command with quiet mode to log keystrokes
+
+- id: webhook-exfil
+  name: Webhook Data Exfiltration
+  pattern: '(requests\.post|fetch|http\.request)\s*\(.*https?://(?!localhost|127\.0\.0\.1)'
+  severity: HIGH
+  attack_category: webhook_exfiltration
+  description: POST request to external URL with potential credential data
+
+- id: c2-beacon-ip
+  name: C2 Beaconing to IP Address
+  pattern: 'https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+  severity: HIGH
+  attack_category: c2_beaconing
+  description: HTTP request to hardcoded IP address, potential C2 communication

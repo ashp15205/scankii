@@ -1,0 +1,67 @@
+name: 'scankii'
+description: 'Scan LLM agent skills for credential leakage, prompt injection, and cross-modal vulnerabilities.'
+author: 'scankii'
+
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  path:
+    description: 'Path to the skill directory to scan'
+    required: false
+    default: '.'
+  severity-threshold:
+    description: 'Minimum severity to report (low, medium, high, critical)'
+    required: false
+    default: 'high'
+  sarif-upload:
+    description: 'Upload SARIF results to GitHub Code Scanning'
+    required: false
+    default: 'true'
+  fail-on-findings:
+    description: 'Fail the action if findings are detected'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install scankii
+      shell: bash
+      run: pip install -e ${{ github.action_path }}
+
+    - name: Run scankii scan
+      shell: bash
+      run: |
+        scankii scan ${{ inputs.path }} --format sarif
+        scankii scan ${{ inputs.path }} --format json
+
+    - name: Upload SARIF to GitHub Code Scanning
+      if: inputs.sarif-upload == 'true' && always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: findings.sarif
+
+    - name: Check findings
+      if: inputs.fail-on-findings == 'true'
+      shell: bash
+      run: |
+        python3 -c "
+        import json, sys
+        data = json.load(open('findings.json'))
+        threshold = '${{ inputs.severity-threshold }}'.upper()
+        levels = {'LOW': 0, 'MEDIUM': 1, 'HIGH': 2, 'CRITICAL': 3}
+        threshold_level = levels.get(threshold, 2)
+        findings = data.get('findings', [])
+        violations = [f for f in findings if levels.get(f.get('severity', 'LOW'), 0) >= threshold_level]
+        if violations:
+            print(f'::error::{len(violations)} finding(s) at or above {threshold} severity')
+            sys.exit(1)
+        print('No findings above threshold.')
+        "

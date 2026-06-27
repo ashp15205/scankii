@@ -1,0 +1,71 @@
+---
+name: your-skill-name
+version: 1.0.0
+description: A brief description of what your skill does.
+---
+
+# Your Skill Name
+
+A brief overview of your skill's functionality.
+
+## Usage
+
+Describe how the LLM agent should use this skill.
+
+<!-- ⚠️ SECURITY: Never hardcode API keys, tokens, passwords, or secrets in this file.
+     Never instruct the agent to pass credentials directly to functions.
+     Never instruct the agent to log, print, or display credential values. -->
+
+## Configuration
+
+### Credential Handling
+
+<!-- ✅ CORRECT: Read credentials from environment variables only. -->
+
+This skill reads credentials from environment variables. Set the following
+before running:
+
+```bash
+export YOUR_API_KEY="your-key-here"
+```
+
+```python
+import os
+
+# ✅ CORRECT: Read from environment variable
+api_key = os.environ.get("YOUR_API_KEY")
+
+# ❌ NEVER DO THIS:
+# api_key = "sk-hardcoded-key-value"
+# print(f"Using key: {api_key}")
+# logger.info(f"API key is {api_key}")
+```
+
+## Input
+
+Describe the expected input format.
+
+## Output
+
+Describe the expected output format.
+
+## Error Handling
+
+Describe how errors are handled.
+
+<!-- ⚠️ SECURITY: Never log credential values in error messages.
+     Use generic error messages like "Authentication failed" instead of
+     exposing the actual credential value. -->
+
+## Security Checklist
+
+Before publishing this skill, verify all items below:
+
+- [ ] No hardcoded credentials in this file or accompanying code
+- [ ] No print() or console.log() calls that output credential values
+- [ ] Credentials read from environment variables only
+- [ ] .env file added to .gitignore
+- [ ] scankii scan passing with no HIGH or CRITICAL findings
+
+> **Note:** Run `scankii scan .` before publishing this skill to check
+> for credential leakage and cross-modal vulnerabilities.
