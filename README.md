@@ -292,7 +292,7 @@ Stop secrets from being committed locally. Add to `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/ashp15205/scankii
-    rev: v1.0.0
+    rev: v1.1.0
     hooks:
       - id: scankii
         name: scankii
