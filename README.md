@@ -170,12 +170,12 @@ Evaluated against the [SkillLeakBench dataset](https://huggingface.co/datasets/A
 | Metric    | scankii (Static)      |
 |-----------|-----------------------|
 | Precision | 100.0%                |
-| Recall    | 43.5%                 |
-| F1        | 60.6%                 |
+| Recall    | 68.2%                 |
+| F1        | 81.1%                 |
 | Setup     | `pip install scankii` |
 | Skills evaluated | 520            |
 
-scankii is a static-only tool. The paper's pipeline uses dynamic sandbox execution with mock credentials. The recall gap reflects this difference — patterns requiring runtime behavior (interprocedural flows, dynamic credential construction) are on our roadmap. See #42.
+scankii is a static-only tool. The paper's pipeline uses dynamic sandbox execution with mock credentials. The remaining recall gap reflects this difference — patterns requiring runtime behavior (interprocedural flows, dynamic credential construction) are on our roadmap. See #42.
 
 `scankii` is **inspired by the methodology** of the academic pipeline, but redesigned as a fast, static analysis tool with **zero infrastructure overhead**. Just install and scan locally.
 
