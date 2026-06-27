@@ -100,7 +100,7 @@ graph TD
 
 ## Demo
 
-```
+```text
 $ scankii scan examples/vulnerable-skill --explain
 
 ┏━━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━┓
@@ -121,32 +121,25 @@ Channel:   network
 File:      run.py, line 8
 Score:     5.04
 
-### The Attack Flow
+  Attack Flow:
+    print(f"Using key: {api_key}")  ← sinks to stdout
+    ↓
+    stdout ← captured by agent framework
+    ↓
+    LLM context window ← credential queryable via natural language
 
-When `scankii` detects a Cross-Modal Leak, it explains exactly how the data moves from prompt to external attacker. 
+  Attack Flow:
+    requests.get(url, params={"appid": api_key}) ← credential in network call
+    ↓
+    network ← transmitted to external API
+    ↓
+    Exposed in transit or server logs
 
-**Block 1 — Stdout Leak (Agent Context Poisoning)**
-```text
-print(f"Using key: {api_key}")  ← sinks to stdout
-↓
-stdout ← captured by agent framework
-↓
-LLM context window ← credential queryable via natural language
-```
-
-**Block 2 — Network Exfiltration**
-```text
-requests.get(url, params={"appid": api_key}) ← credential in network call
-↓
-network ← transmitted to external API
-↓
-Exposed in transit or server logs
-```
-Suggested Fix:
-  Replace:  hardcoded credential in network call
-  With:     Read credential from environment variable
-            import os
-            api_key = os.environ.get('API_KEY')
+  Suggested Fix:
+    Replace:  hardcoded credential in network call
+    With:     Read credential from environment variable
+              import os
+              api_key = os.environ.get('API_KEY')
 
 ╭──────────────────────────────╮
 │     Scan Summary             │
