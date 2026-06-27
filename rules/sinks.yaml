@@ -108,3 +108,51 @@
   category: file
   language: python
   severity_multiplier: 1.3
+
+- id: python-httpx-post
+  name: Python httpx.post()
+  category: network
+  language: python
+  severity_multiplier: 2.0
+
+- id: python-httpx-get
+  name: Python httpx.get()
+  category: network
+  language: python
+  severity_multiplier: 1.8
+
+- id: python-aiohttp-post
+  name: Python session.post()
+  category: network
+  language: python
+  severity_multiplier: 2.0
+
+- id: python-request-method
+  name: Python .request()
+  category: network
+  language: python
+  severity_multiplier: 1.9
+
+- id: python-sys-stdout-write
+  name: Python sys.stdout.write()
+  category: logging
+  language: python
+  severity_multiplier: 1.5
+
+- id: javascript-console-warn
+  name: JavaScript console.warn()
+  category: logging
+  language: javascript
+  severity_multiplier: 1.3
+
+- id: python-path-write-text
+  name: Python Path.write_text()
+  category: file
+  language: python
+  severity_multiplier: 1.4
+
+- id: javascript-fs-writefilesync
+  name: JavaScript fs.writeFileSync()
+  category: file
+  language: javascript
+  severity_multiplier: 1.5

@@ -72,7 +72,7 @@ def analyze_ast(
             continue
 
         sink_name, sink_cat, sink_sev_mult, func_start_byte, func_end_byte = sink_info
-        arg_vars = _extract_argument_names(call_node, source, lang)
+        arg_vars, arg_strings = _extract_arguments(call_node, source, lang)
 
         for var_name in arg_vars:
             if var_name in cred_vars:
@@ -96,6 +96,31 @@ def analyze_ast(
                         end_byte=func_end_byte,
                     )
                 )
+
+        for literal_str in arg_strings:
+            for pattern, severity, is_generic in cred_patterns:
+                if not is_generic and pattern.search(literal_str):
+                    line_num = call_node.start_point[0] + 1
+                    col = call_node.start_point[1]
+                    enclosing = _find_enclosing_function(call_node, source)
+                    snippet = lines[line_num - 1] if line_num <= len(lines) else ""
+                    severity_val = _compute_severity(severity, sink_sev_mult)
+                    findings.append(
+                        ASTFinding(
+                            file_path=str(file_path),
+                            line_number=line_num,
+                            column=col,
+                            variable_name="<hardcoded_string>",
+                            sink_name=sink_name,
+                            sink_category=sink_cat,
+                            enclosing_function=enclosing,
+                            severity=severity_val,
+                            code_snippet=snippet.strip(),
+                            start_byte=func_start_byte,
+                            end_byte=func_end_byte,
+                        )
+                    )
+                    break
 
     return findings
 
@@ -129,7 +154,7 @@ def analyze_ast_from_string(
             continue
 
         sink_name, sink_cat, sink_sev_mult, func_start_byte, func_end_byte = sink_info
-        arg_vars = _extract_argument_names(call_node, source, lang)
+        arg_vars, arg_strings = _extract_arguments(call_node, source, lang)
 
         for var_name in arg_vars:
             if var_name in cred_vars:
@@ -153,6 +178,31 @@ def analyze_ast_from_string(
                         end_byte=func_end_byte,
                     )
                 )
+
+        for literal_str in arg_strings:
+            for pattern, severity, is_generic in cred_patterns:
+                if not is_generic and pattern.search(literal_str):
+                    line_num = call_node.start_point[0] + 1
+                    col = call_node.start_point[1]
+                    enclosing = _find_enclosing_function(call_node, source)
+                    snippet = lines[line_num - 1] if line_num <= len(lines) else ""
+                    severity_val = _compute_severity(severity, sink_sev_mult)
+                    findings.append(
+                        ASTFinding(
+                            file_path=file_path,
+                            line_number=line_num,
+                            column=col,
+                            variable_name="<hardcoded_string>",
+                            sink_name=sink_name,
+                            sink_category=sink_cat,
+                            enclosing_function=enclosing,
+                            severity=severity_val,
+                            code_snippet=snippet.strip(),
+                            start_byte=func_start_byte,
+                            end_byte=func_end_byte,
+                        )
+                    )
+                    break
 
     return findings
 
@@ -183,15 +233,14 @@ def _parse(source: str, lang: str):
 
 def _compile_credential_patterns(
     credentials: list[dict[str, Any]],
-) -> list[tuple[re.Pattern, str]]:
-    """Compile credential YAML entries into (regex, severity) pairs for variable names."""
-    patterns: list[tuple[re.Pattern, str]] = []
+) -> list[tuple[re.Pattern, str, bool]]:
+    """Compile credential YAML entries into (regex, severity, is_generic) triples."""
+    patterns: list[tuple[re.Pattern, str, bool]] = []
     for entry in credentials:
-        # Only match variable-name patterns (generic ones), not value patterns
-        # Variable-name patterns use (?i)\b word-boundary matching
         pattern_str = entry["pattern"]
+        is_generic = entry.get("id", "").startswith("generic-")
         try:
-            patterns.append((re.compile(pattern_str), entry["severity"]))
+            patterns.append((re.compile(pattern_str), entry["severity"], is_generic))
         except re.error:
             continue
     return patterns
@@ -224,7 +273,7 @@ def _build_sink_lookup(
 
 
 def _find_credential_variables(
-    root: Node, source: str, cred_patterns: list[tuple[re.Pattern, str]]
+    root: Node, source: str, cred_patterns: list[tuple[re.Pattern, str, bool]]
 ) -> dict[str, str]:
     """Walk AST and find all variable assignments whose names match credential patterns.
 
@@ -236,7 +285,7 @@ def _find_credential_variables(
         var_name = _extract_assignment_name(node, source)
         if var_name is None:
             continue
-        for pattern, severity in cred_patterns:
+        for pattern, severity, is_generic in cred_patterns:
             if pattern.search(var_name):
                 cred_vars[var_name] = severity
                 break
@@ -247,7 +296,7 @@ def _find_credential_variables(
             for child in node.children:
                 param_name = _extract_param_name(child, source)
                 if param_name:
-                    for pattern, severity in cred_patterns:
+                    for pattern, severity, is_generic in cred_patterns:
                         if pattern.search(param_name):
                             cred_vars[param_name] = severity
                             break
@@ -315,28 +364,30 @@ def _match_sink(
         return None
 
     func_text = _node_text(func_node, source)
-    if func_text in sink_lookup:
-        name, cat, sev = sink_lookup[func_text]
-        return name, cat, sev, func_node.start_byte, func_node.end_byte
+    for sink_key, (name, cat, sev) in sink_lookup.items():
+        if func_text == sink_key:
+            return name, cat, sev, func_node.start_byte, func_node.end_byte
+        if "." in sink_key and func_text.endswith("." + sink_key.split(".")[-1]):
+            return name, cat, sev, func_node.start_byte, func_node.end_byte
 
     return None
 
 
-def _extract_argument_names(call_node: Node, source: str, lang: str) -> list[str]:
-    """Extract identifier names used as arguments in a call expression.
-
-    Also handles f-string interpolations and template literals.
-    """
+def _extract_arguments(call_node: Node, source: str, lang: str) -> tuple[list[str], list[str]]:
+    """Extract identifier names and string literals used as arguments in a call expression."""
     names: list[str] = []
+    strings: list[str] = []
     args_node = call_node.child_by_field_name("arguments")
     if args_node is None:
-        return names
+        return names, strings
 
     for child in _iter_nodes(args_node):
         if child.type == "identifier":
             names.append(_node_text(child, source))
+        elif child.type == "string":
+            strings.append(_node_text(child, source).strip("'\""))
 
-    return names
+    return names, strings
 
 
 def _find_enclosing_function(node: Node, source: str) -> str:

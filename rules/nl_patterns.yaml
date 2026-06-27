@@ -15,6 +15,10 @@ credential_terms:
   - auth
   - oauth
   - appid
+  - jwt
+  - session id
+  - aws key
+  - bearer token
 
 action_verbs:
   - send
@@ -32,6 +36,11 @@ action_verbs:
   - output
   - export
   - return
+  - expose
+  - exfiltrate
+  - leak
+  - transfer
+  - send back
 
 prompt_injection_phrases:
   - ignore previous instructions
