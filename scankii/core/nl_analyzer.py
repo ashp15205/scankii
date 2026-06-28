@@ -12,7 +12,7 @@ import yaml
 FindingType = Literal["credential_action", "prompt_injection", "social_engineering"]
 Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
-RULES_PATH = Path(__file__).resolve().parent.parent.parent / "rules" / "nl_patterns.yaml"
+RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "nl_patterns.yaml"
 WINDOW_SIZE = 3
 
 

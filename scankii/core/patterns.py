@@ -15,7 +15,7 @@ import yaml
 
 Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
-RULES_PATH = Path(__file__).resolve().parent.parent.parent / "rules" / "malicious.yaml"
+RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "malicious.yaml"
 
 
 @dataclass(frozen=True)

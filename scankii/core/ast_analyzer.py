@@ -14,7 +14,7 @@ from tree_sitter import Language, Parser, Node
 
 Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
-RULES_DIR = Path(__file__).resolve().parent.parent.parent / "rules"
+RULES_DIR = Path(__file__).resolve().parent.parent / "rules"
 CREDENTIALS_PATH = RULES_DIR / "credentials.yaml"
 SINKS_PATH = RULES_DIR / "sinks.yaml"
 

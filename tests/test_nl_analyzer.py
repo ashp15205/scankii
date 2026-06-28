@@ -8,7 +8,7 @@ import pytest
 
 from scankii.core.nl_analyzer import NLFinding, analyze_nl
 
-RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "nl_patterns.yaml"
+RULES_PATH = Path(__file__).resolve().parent.parent / "scankii" / "rules" / "nl_patterns.yaml"
 
 
 def _findings_of_type(findings: list[NLFinding], finding_type: str) -> list[NLFinding]:

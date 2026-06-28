@@ -15,7 +15,7 @@ from typing import Any, TextIO
 
 import yaml
 
-_RULES_PATH = Path(__file__).resolve().parent.parent.parent / "rules" / "credentials.yaml"
+_RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "credentials.yaml"
 
 # Cache compiled patterns
 _PATTERNS: list[tuple[re.Pattern, str]] | None = None

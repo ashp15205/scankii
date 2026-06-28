@@ -35,7 +35,7 @@ class ScanResult:
             "skill_path": self.skill_path,
             "scan_timestamp": self.scan_timestamp,
             "summary": self.summary,
-            "findings": [_scored_finding_to_dict(sf) for sf in self.findings],
+            "findings": [_scored_finding_to_dict(sf, self.skill_path) for sf in self.findings],
         }
 
     def to_json(self, indent: int = 2) -> str:
@@ -154,14 +154,22 @@ def _build_summary(findings: list[ScoredFinding]) -> dict[str, int]:
 def _get_file_hash(path: str) -> str:
     try:
         content = Path(path).read_bytes()
-        return hashlib.sha256(content).hexdigest()
+        return "sha256:" + hashlib.sha256(content).hexdigest()
     except Exception:
         return "unknown"
 
 def _get_fragment_hash(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
+    return "sha256:" + hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
 
-def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
+def _relativize(path: str, base_path: str) -> str:
+    try:
+        if not path or not base_path:
+            return path
+        return str(Path(path).resolve().relative_to(Path(base_path).resolve()))
+    except ValueError:
+        return path
+
+def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str, Any]:
     """Convert a ScoredFinding to a JSON-serializable dict."""
     finding = sf.finding
     
@@ -188,10 +196,11 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
         return "UNVERIFIABLE", False
 
     if isinstance(finding, NLFinding):
+        rel_path = _relativize(finding.file_path, base_path)
         result["file_hash"] = _get_file_hash(finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.window_text)
         result["details"] = {
-            "file_path": finding.file_path,
+            "file_path": rel_path,
             "window_text": finding.window_text,
             "finding_type": finding.finding_type,
             "matched_terms": list(finding.matched_terms),
@@ -199,13 +208,14 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
             "original_severity": finding.severity,
         }
     elif isinstance(finding, ASTFinding):
+        rel_path = _relativize(finding.file_path, base_path)
         result["file_hash"] = _get_file_hash(finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.code_snippet)
         containment, witness = get_containment_and_witness(finding.sink_category)
         result["recommended_containment"] = containment
         result["requires_runtime_witness"] = witness
         result["details"] = {
-            "file_path": finding.file_path,
+            "file_path": rel_path,
             "line_number": finding.line_number,
             "column": finding.column,
             "variable_name": finding.variable_name,
@@ -219,6 +229,8 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
         }
     elif hasattr(finding, "cross_modal"):
         # CrossModalFinding
+        ast_rel_path = _relativize(finding.ast_finding.file_path, base_path)
+        nl_rel_path = _relativize(finding.nl_finding.file_path, base_path)
         result["file_hash"] = _get_file_hash(finding.ast_finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.nl_finding.window_text + finding.ast_finding.code_snippet)
         result["unverifiable_static_boundary"] = True
@@ -230,14 +242,14 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
             "cross_modal": finding.cross_modal,
             "attack_flow": list(finding.attack_flow),
             "nl_finding": {
-                "file_path": finding.nl_finding.file_path,
+                "file_path": nl_rel_path,
                 "window_text": finding.nl_finding.window_text,
                 "finding_type": finding.nl_finding.finding_type,
                 "matched_terms": list(finding.nl_finding.matched_terms),
                 "line_number": finding.nl_finding.line_number,
             },
             "ast_finding": {
-                "file_path": finding.ast_finding.file_path,
+                "file_path": ast_rel_path,
                 "line_number": finding.ast_finding.line_number,
                 "column": finding.ast_finding.column,
                 "variable_name": finding.ast_finding.variable_name,
