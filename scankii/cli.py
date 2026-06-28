@@ -51,8 +51,7 @@ def scan(path: Path, output_format: OutputFormat, run_explain: bool, run_resolve
     result = scan_directory(path)
 
     if output_format == "json":
-        out_path = save_json_report(result)
-        click.echo(f"JSON report saved to {out_path}")
+        click.echo(result.to_json())
     elif output_format == "sarif":
         out_path = save_sarif_report(result)
         click.echo(f"SARIF report saved to {out_path}")
