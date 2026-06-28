@@ -1,0 +1,39 @@
+{
+  "scankii_version": "1.1.0",
+  "skill_path": "/Users/tukarampatil/Desktop/skill-guard/examples/static-only-skill",
+  "scan_timestamp": "2026-06-28T17:45:28.396689+00:00",
+  "summary": {
+    "CRITICAL": 1,
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0,
+    "total": 1
+  },
+  "findings": [
+    {
+      "score": 5.04,
+      "severity": "CRITICAL",
+      "finding_type": "ASTFinding",
+      "observed_static": true,
+      "requires_runtime_witness": true,
+      "unverifiable_static_boundary": false,
+      "unverifiable_reason": null,
+      "recommended_containment": "block",
+      "file_hash": "sha256:9029895e640732a9b219a13efd500c0a9b393e6b60a178ef8067df7615a60e9f",
+      "fragment_hash": "sha256:6bc1a84c68eb18a24a5c4859357434bb4371049f7c1ecf1567a1e8a64a44af30",
+      "details": {
+        "file_path": "run.py",
+        "line_number": 5,
+        "column": 4,
+        "variable_name": "api_key",
+        "sink_name": "Python requests.post()",
+        "sink_category": "network",
+        "enclosing_function": "main",
+        "original_severity": "HIGH",
+        "code_snippet": "requests.post(\"http://example.com\", data=api_key)",
+        "start_byte": 59,
+        "end_byte": 72
+      }
+    }
+  ]
+}

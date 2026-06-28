@@ -1,0 +1,39 @@
+{
+  "scankii_version": "1.1.0",
+  "skill_path": "/Users/tukarampatil/Desktop/skill-guard/examples/file-sink-skill",
+  "scan_timestamp": "2026-06-28T17:45:49.841215+00:00",
+  "summary": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 1,
+    "LOW": 0,
+    "total": 1
+  },
+  "findings": [
+    {
+      "score": 2.1,
+      "severity": "MEDIUM",
+      "finding_type": "ASTFinding",
+      "observed_static": true,
+      "requires_runtime_witness": true,
+      "unverifiable_static_boundary": false,
+      "unverifiable_reason": null,
+      "recommended_containment": "require approval",
+      "file_hash": "sha256:8f1e8a9a45b9fbfd13a89ccd6a411d7070e0d5ada8df1bae4b68257e890ad11a",
+      "fragment_hash": "sha256:b3d2a7810c9a1067f63c9cebf648734147764c344f4ca734b2750feb98910565",
+      "details": {
+        "file_path": "run.py",
+        "line_number": 4,
+        "column": 8,
+        "variable_name": "api_key",
+        "sink_name": "Python file.write()",
+        "sink_category": "file",
+        "enclosing_function": "main",
+        "original_severity": "MEDIUM",
+        "code_snippet": "f.write(api_key)",
+        "start_byte": 85,
+        "end_byte": 92
+      }
+    }
+  ]
+}

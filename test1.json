@@ -1,0 +1,39 @@
+{
+  "scankii_version": "1.1.0",
+  "skill_path": "/Users/tukarampatil/Desktop/skill-guard/examples/unresolved-sink-skill",
+  "scan_timestamp": "2026-06-28T17:45:23.120457+00:00",
+  "summary": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 1,
+    "LOW": 0,
+    "total": 1
+  },
+  "findings": [
+    {
+      "score": 2.1,
+      "severity": "MEDIUM",
+      "finding_type": "ASTFinding",
+      "observed_static": true,
+      "requires_runtime_witness": true,
+      "unverifiable_static_boundary": true,
+      "unverifiable_reason": "unresolved interprocedural boundary",
+      "recommended_containment": "block",
+      "file_hash": "sha256:bf27b794ffffb76ed320be89a04bd465553b64b2c27f564eebb5f0505f67afe9",
+      "fragment_hash": "sha256:c0221c23353d142a911174fa6d6216fbd17101e16ac8ed957e7da8ecebecf93f",
+      "details": {
+        "file_path": "run.py",
+        "line_number": 5,
+        "column": 4,
+        "variable_name": "api_key",
+        "sink_name": "Unknown function 'unknown_module.do_something'",
+        "sink_category": "unknown",
+        "enclosing_function": "main",
+        "original_severity": "MEDIUM",
+        "code_snippet": "unknown_module.do_something(api_key)",
+        "start_byte": 65,
+        "end_byte": 92
+      }
+    }
+  ]
+}

@@ -91,6 +91,12 @@
   language: python
   severity_multiplier: 1.4
 
+- id: python-file-write
+  name: Python file.write()
+  category: file
+  language: python
+  severity_multiplier: 1.4
+
 - id: javascript-fs-writefile
   name: JavaScript fs.writeFile()
   category: file

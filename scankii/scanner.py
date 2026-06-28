@@ -187,11 +187,9 @@ def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str,
     def get_containment_and_witness(sink_cat: str) -> tuple[str, bool]:
         if sink_cat in {"stdout", "logging"}:
             return "redact", False
-        elif sink_cat == "network":
+        elif sink_cat in {"network", "unknown"}:
             return "block", True
-        elif sink_cat == "file":
-            return "require approval", True
-        elif sink_cat == "env":
+        elif sink_cat in {"file", "env"}:
             return "require approval", True
         return "UNVERIFIABLE", False
 
@@ -211,6 +209,10 @@ def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str,
         rel_path = _relativize(finding.file_path, base_path)
         result["file_hash"] = _get_file_hash(finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.code_snippet)
+        
+        result["unverifiable_static_boundary"] = bool(finding.unverifiable_reason)
+        result["unverifiable_reason"] = finding.unverifiable_reason
+        
         containment, witness = get_containment_and_witness(finding.sink_category)
         result["recommended_containment"] = containment
         result["requires_runtime_witness"] = witness

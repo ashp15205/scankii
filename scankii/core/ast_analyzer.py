@@ -37,6 +37,7 @@ class ASTFinding:
     code_snippet: str
     start_byte: int = 0
     end_byte: int = 0
+    unverifiable_reason: str | None = None
 
 
 def analyze_ast(
@@ -70,8 +71,10 @@ def analyze_ast(
         sink_info = _match_sink(call_node, source, sink_lookup)
         if sink_info is None:
             continue
-
+            
         sink_name, sink_cat, sink_sev_mult, func_start_byte, func_end_byte = sink_info
+        
+        unverifiable = "unresolved interprocedural boundary" if sink_cat == "unknown" else None
         arg_vars, arg_strings = _extract_arguments(call_node, source, lang)
 
         for var_name in arg_vars:
@@ -94,6 +97,7 @@ def analyze_ast(
                         code_snippet=snippet.strip(),
                         start_byte=func_start_byte,
                         end_byte=func_end_byte,
+                        unverifiable_reason=unverifiable,
                     )
                 )
 
@@ -118,6 +122,7 @@ def analyze_ast(
                             code_snippet=snippet.strip(),
                             start_byte=func_start_byte,
                             end_byte=func_end_byte,
+                            unverifiable_reason=unverifiable,
                         )
                     )
                     break
@@ -154,6 +159,7 @@ def analyze_ast_from_string(
             continue
 
         sink_name, sink_cat, sink_sev_mult, func_start_byte, func_end_byte = sink_info
+        unverifiable = "unresolved interprocedural boundary" if sink_cat == "unknown" else None
         arg_vars, arg_strings = _extract_arguments(call_node, source, lang)
 
         for var_name in arg_vars:
@@ -176,6 +182,7 @@ def analyze_ast_from_string(
                         code_snippet=snippet.strip(),
                         start_byte=func_start_byte,
                         end_byte=func_end_byte,
+                        unverifiable_reason=unverifiable,
                     )
                 )
 
@@ -200,6 +207,7 @@ def analyze_ast_from_string(
                             code_snippet=snippet.strip(),
                             start_byte=func_start_byte,
                             end_byte=func_end_byte,
+                            unverifiable_reason=unverifiable,
                         )
                     )
                     break
@@ -364,13 +372,24 @@ def _match_sink(
         return None
 
     func_text = _node_text(func_node, source)
+    
+    # Safe built-ins that we know do not leak data externally
+    safe_builtins = {
+        "len", "str", "int", "bool", "float", "type", "isinstance", 
+        "format", "hash", "dict", "list", "set", "tuple", "Exception", "Error"
+    }
+    
+    if func_text in safe_builtins:
+        return None
+        
     for sink_key, (name, cat, sev) in sink_lookup.items():
         if func_text == sink_key:
             return name, cat, sev, func_node.start_byte, func_node.end_byte
         if "." in sink_key and func_text.endswith("." + sink_key.split(".")[-1]):
             return name, cat, sev, func_node.start_byte, func_node.end_byte
 
-    return None
+    # If it didn't match a safe builtin or a known sink, it is an unresolved boundary
+    return f"Unknown function '{func_text}'", "unknown", 1.0, func_node.start_byte, func_node.end_byte
 
 
 def _extract_arguments(call_node: Node, source: str, lang: str) -> tuple[list[str], list[str]]:
