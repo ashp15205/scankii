@@ -172,6 +172,7 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
         "observed_static": True,
         "requires_runtime_witness": False,
         "unverifiable_static_boundary": False,
+        "unverifiable_reason": None,
         "recommended_containment": "UNVERIFIABLE",
     }
     
@@ -221,6 +222,7 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
         result["file_hash"] = _get_file_hash(finding.ast_finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.nl_finding.window_text + finding.ast_finding.code_snippet)
         result["unverifiable_static_boundary"] = True
+        result["unverifiable_reason"] = "cross-modal semantic heuristic"
         containment, witness = get_containment_and_witness(finding.ast_finding.sink_category)
         result["recommended_containment"] = containment
         result["requires_runtime_witness"] = witness
