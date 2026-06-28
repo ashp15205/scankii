@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scankii import __version__
 from scankii.core.nl_analyzer import NLFinding, analyze_nl
 from scankii.core.ast_analyzer import ASTFinding, analyze_ast
 from scankii.core.cross_modal import analyze_cross_modal, AnyFinding, CrossModalFinding
@@ -29,6 +31,7 @@ class ScanResult:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the scan result to a JSON-compatible dict."""
         return {
+            "scankii_version": __version__,
             "skill_path": self.skill_path,
             "scan_timestamp": self.scan_timestamp,
             "summary": self.summary,
@@ -148,16 +151,44 @@ def _build_summary(findings: list[ScoredFinding]) -> dict[str, int]:
     return summary
 
 
+def _get_file_hash(path: str) -> str:
+    try:
+        content = Path(path).read_bytes()
+        return hashlib.sha256(content).hexdigest()
+    except Exception:
+        return "unknown"
+
+def _get_fragment_hash(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
+
 def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
     """Convert a ScoredFinding to a JSON-serializable dict."""
     finding = sf.finding
+    
     result: dict[str, Any] = {
         "score": sf.score,
         "severity": sf.severity,
         "finding_type": type(finding).__name__,
+        "observed_static": True,
+        "requires_runtime_witness": False,
+        "unverifiable_static_boundary": False,
+        "recommended_containment": "UNVERIFIABLE",
     }
+    
+    def get_containment_and_witness(sink_cat: str) -> tuple[str, bool]:
+        if sink_cat in {"stdout", "logging"}:
+            return "redact", False
+        elif sink_cat == "network":
+            return "block", True
+        elif sink_cat == "file":
+            return "require approval", True
+        elif sink_cat == "env":
+            return "require approval", True
+        return "UNVERIFIABLE", False
 
     if isinstance(finding, NLFinding):
+        result["file_hash"] = _get_file_hash(finding.file_path)
+        result["fragment_hash"] = _get_fragment_hash(finding.window_text)
         result["details"] = {
             "file_path": finding.file_path,
             "window_text": finding.window_text,
@@ -167,6 +198,11 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
             "original_severity": finding.severity,
         }
     elif isinstance(finding, ASTFinding):
+        result["file_hash"] = _get_file_hash(finding.file_path)
+        result["fragment_hash"] = _get_fragment_hash(finding.code_snippet)
+        containment, witness = get_containment_and_witness(finding.sink_category)
+        result["recommended_containment"] = containment
+        result["requires_runtime_witness"] = witness
         result["details"] = {
             "file_path": finding.file_path,
             "line_number": finding.line_number,
@@ -182,6 +218,12 @@ def _scored_finding_to_dict(sf: ScoredFinding) -> dict[str, Any]:
         }
     elif hasattr(finding, "cross_modal"):
         # CrossModalFinding
+        result["file_hash"] = _get_file_hash(finding.ast_finding.file_path)
+        result["fragment_hash"] = _get_fragment_hash(finding.nl_finding.window_text + finding.ast_finding.code_snippet)
+        result["unverifiable_static_boundary"] = True
+        containment, witness = get_containment_and_witness(finding.ast_finding.sink_category)
+        result["recommended_containment"] = containment
+        result["requires_runtime_witness"] = witness
         result["details"] = {
             "cross_modal": finding.cross_modal,
             "attack_flow": list(finding.attack_flow),
