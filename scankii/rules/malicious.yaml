@@ -119,3 +119,24 @@
   severity: HIGH
   attack_category: c2_beaconing
   description: HTTP request to hardcoded IP address, potential C2 communication
+
+- id: encoded-payload-base64
+  name: Encoded Malicious Payload (Base64)
+  pattern: '(?:[A-Za-z0-9+/]{4}){20,}(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?'
+  severity: HIGH
+  attack_category: obfuscated_payload
+  description: Large base64 encoded string potentially containing a malicious payload (CVE-006)
+
+- id: encoded-payload-hex
+  name: Encoded Malicious Payload (Hex)
+  pattern: '(\\x[0-9a-fA-F]{2}){10,}'
+  severity: HIGH
+  attack_category: obfuscated_payload
+  description: Large hex encoded string potentially containing a malicious payload (CVE-006)
+
+- id: supply-chain-dynamic-exec
+  name: Malicious Supply-Chain Update
+  pattern: '(eval|exec)\s*\(.*(requests\.get|urllib\.request\.urlopen|fetch)\s*\('
+  severity: CRITICAL
+  attack_category: supply_chain_tampering
+  description: Dynamic code execution fetching from a network request, potential supply-chain update (CVE-007)
