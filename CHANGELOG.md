@@ -12,3 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added heuristic rules to detect MCP supply chain vulnerabilities:
   - CVE-006: Detection for Base64 and Hex encoded malicious payloads (often found hidden in tool descriptions).
   - CVE-007: Detection for legitimate tools updated with dynamic/remote code execution (supply-chain tampering).
+
+### Fixed
+- Promoted `file_path` to a first-class (top-level) field in the scan receipt JSON schema to improve downstream harness joins.
