@@ -140,3 +140,24 @@
   severity: CRITICAL
   attack_category: supply_chain_tampering
   description: Dynamic code execution fetching from a network request, potential supply-chain update (CVE-007)
+
+- id: encoded-payload-homoglyph
+  name: Encoded Malicious Payload (Homoglyph)
+  pattern: '[\u0399\u039f\u0430\u043e\u0441\u0440\u0445\u0443\u0501]'
+  severity: HIGH
+  attack_category: obfuscated_payload
+  description: Greek or Cyrillic homoglyph lookalike characters hiding prompt injections (CVE-006)
+
+- id: encoded-payload-invisible
+  name: Encoded Malicious Payload (Invisible Chars)
+  pattern: '[\u200b\u200c\u200d\u202e\u202a\u202b\u202c\u202d]'
+  severity: HIGH
+  attack_category: obfuscated_payload
+  description: Zero-width spaces or right-to-left overrides hiding malicious payloads (CVE-006)
+
+- id: nested-schema-exfil
+  name: Nested Schema Data Exfiltration
+  pattern: '(?i)(?:retrieve|include|read|extract)\s+(?:all\s+)?(?:API\s*keys?|tokens?|~/\.ssh/id_rsa|~/\.env)'
+  severity: CRITICAL
+  attack_category: nested_schema_poisoning
+  description: Prompt injection inside schema descriptions aiming to extract sensitive data (CVE-2026-25253)

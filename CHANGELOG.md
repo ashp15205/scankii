@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Added AST data flow heuristic rule to detect CVE-2026-25253:
-  - Specifically flags `gatewayUrl` and `mcp_token` variables to prevent authentication token exfiltration via sink functions.
-- Added heuristic rules to detect MCP supply chain vulnerabilities:
-  - CVE-006: Detection for Base64 and Hex encoded malicious payloads (often found hidden in tool descriptions).
-  - CVE-007: Detection for legitimate tools updated with dynamic/remote code execution (supply-chain tampering).
+- Added heuristics for MCP supply chain vulnerabilities (CVE-2026-25253, CVE-006, CVE-007):
+  - **Nested Schema Exfiltration:** Flags prompt injections hidden inside schema descriptions or enum fields attempting to exfiltrate tokens.
+  - **Advanced Obfuscation:** Detection for Base64, Hex, Homoglyphs (Greek/Cyrillic lookalikes), Zero-width spaces, and RTL overrides often used to hide payloads.
+  - **Dynamic Execution:** Detection for legitimate tools updated with remote code fetching (`exec(requests.get(...))`).
 
 ### Fixed
 - Promoted `file_path` to a first-class (top-level) field in the scan receipt JSON schema to improve downstream harness joins.
