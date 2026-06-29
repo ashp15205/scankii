@@ -40,7 +40,7 @@ If you download an open-source AI skill from GitHub, you shouldn't trust it blin
    ```bash
    scankii scan ./downloaded-skill/
    ```
-2. **Review the table:** `scankii` will list any CRITICAL or HIGH severity issues.
+2. **Review the table:** `scankii` will list any CRITICAL or HIGH severity issues, including cross-modal leaks, token exfiltration attempts, and hidden supply-chain payloads (e.g., Base64/Hex obfuscation).
 3. **Fix it:** `scankii` will suggest exactly how to rewrite the code or the Markdown to fix the vulnerability. For automatic fixes (like replacing `print()` with `safe_print()`), you can run the scan with the `--resolve` flag:
    ```bash
    scankii scan --resolve ./downloaded-skill/
@@ -62,6 +62,11 @@ Sometimes your code *has* to print debugging info, but you don't want the AI to 
    # Actually outputs: Using token: sk-[REDACTED]
    ```
    Because it is redacted, the AI never sees the real key.
+
+### Scenario D: Protecting the Model Context Protocol (MCP) Supply Chain
+If you use MCP tools or agent architectures where tools can be dynamically updated over the network, attackers often try to slip in hidden code to steal your authentication tokens.
+1. `scankii` automatically scans for **Nested Schema Poisoning (CVE-2026-25253)** by detecting prompt injections hidden deep inside JSON schema parameters that instruct the LLM to steal environment variables or SSH keys.
+2. It also catches **Supply-Chain Tampering (CVE-006, CVE-007)** by looking for long Base64/Hex payloads hidden inside benign tool descriptions, or dynamic `exec()` functions that pull code from external sources.
 
 ## 4. Why scankii over GitLeaks or TruffleHog?
 
