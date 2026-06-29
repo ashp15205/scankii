@@ -45,7 +45,7 @@ def to_sarif(result: ScanResult) -> dict[str, Any]:
                 "tool": {
                     "driver": {
                         "name": "scankii",
-                        "version": "1.1.0",
+                        "version": "1.2.0",
                         "informationUri": "https://github.com/ashp15205/scankii",
                         "rules": rules,
                     }
