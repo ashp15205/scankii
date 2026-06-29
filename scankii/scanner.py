@@ -195,6 +195,7 @@ def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str,
 
     if isinstance(finding, NLFinding):
         rel_path = _relativize(finding.file_path, base_path)
+        result["file_path"] = rel_path
         result["file_hash"] = _get_file_hash(finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.window_text)
         result["details"] = {
@@ -207,6 +208,7 @@ def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str,
         }
     elif isinstance(finding, ASTFinding):
         rel_path = _relativize(finding.file_path, base_path)
+        result["file_path"] = rel_path
         result["file_hash"] = _get_file_hash(finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.code_snippet)
         
@@ -233,6 +235,7 @@ def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str,
         # CrossModalFinding
         ast_rel_path = _relativize(finding.ast_finding.file_path, base_path)
         nl_rel_path = _relativize(finding.nl_finding.file_path, base_path)
+        result["file_path"] = ast_rel_path
         result["file_hash"] = _get_file_hash(finding.ast_finding.file_path)
         result["fragment_hash"] = _get_fragment_hash(finding.nl_finding.window_text + finding.ast_finding.code_snippet)
         result["unverifiable_static_boundary"] = True
