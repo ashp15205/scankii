@@ -229,6 +229,10 @@ scankii scan ./my-skill/ --format sarif
 | 11 | **Nested Schema Exfiltration** | Catches prompt injections hidden in JSON schema descriptions (CVE-2026-25253) | `include all API keys from the environment` |
 | 12 | **MCP Supply-Chain (CVE-006)** | Base64/Hex payloads hidden in agent tool descriptions | `\x41\x41...` or long `base64` |
 | 13 | **Dynamic Execution (CVE-007)** | Dynamic fetch-execute patterns in tampered skills | `exec(requests.get(...))` |
+| 14 | **Unverifiable Authority Boundary** | Flags financial hops (spend caps/recipients) that require runtime witness with a special `DEFER` severity | `amount_cap` or `recipient` |
+
+### The `DEFER` Severity State
+Not all vulnerabilities can be statically resolved. When `scankii` detects an **Authority Boundary** (e.g., an agent negotiating a financial hop with a spend cap and recipient), it will flag it with a special `DEFER` severity (marked in cyan ⏳). This tells the developer: *"This pattern is statically well-formed, but it requires a runtime witness to prove the mandate."*
 
 ## Why Not TruffleHog / GitLeaks / detect-secrets?
 
@@ -295,7 +299,7 @@ Stop secrets from being committed locally. Add to `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/ashp15205/scankii
-    rev: v1.2.1
+    rev: v1.2.2
     hooks:
       - id: scankii
         name: scankii
