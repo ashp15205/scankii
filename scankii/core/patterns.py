@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 import yaml
 
-Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL", "DEFER"]
 
 RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "malicious.yaml"
 

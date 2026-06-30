@@ -14,6 +14,7 @@ from scankii.core.nl_analyzer import NLFinding, analyze_nl
 from scankii.core.ast_analyzer import ASTFinding, analyze_ast
 from scankii.core.cross_modal import analyze_cross_modal, AnyFinding, CrossModalFinding
 from scankii.core.scorer import ScoredFinding, score_findings
+from scankii.core.patterns import scan_file, MaliciousFinding
 
 _SOURCE_EXTENSIONS = {".py", ".js", ".ts", ".sh"}
 _MARKDOWN_EXTENSIONS = {".md"}
@@ -75,8 +76,12 @@ def scan_directory(path: str | Path) -> ScanResult:
             # Skip files that can't be parsed
             continue
 
-    # Cross-modal analysis
+    # Run cross-modal analysis
     all_findings: list[AnyFinding] = analyze_cross_modal(nl_findings, ast_findings)
+
+    # Run malicious pattern analysis on all files
+    for f in (md_files + source_files):
+        all_findings.extend(scan_file(f))
 
     # Deduplicate findings based on a semantic signature
     unique_findings = []
@@ -86,6 +91,8 @@ def scan_directory(path: str | Path) -> ScanResult:
             sig = ("CrossModal", f.ast_finding.file_path, f.ast_finding.line_number, f.ast_finding.sink_name)
         elif isinstance(f, ASTFinding):
             sig = ("AST", f.file_path, f.line_number, f.sink_name)
+        elif isinstance(f, MaliciousFinding):
+            sig = ("Malicious", f.file_path, f.line_number, f.pattern_id)
         else:
             sig = ("NL", f.file_path, f.line_number, f.window_text)
             
@@ -143,6 +150,7 @@ def _build_summary(findings: list[ScoredFinding]) -> dict[str, int]:
         "HIGH": 0,
         "MEDIUM": 0,
         "LOW": 0,
+        "DEFER": 0,
         "total": 0,
     }
     for f in findings:
@@ -266,6 +274,20 @@ def _scored_finding_to_dict(sf: ScoredFinding, base_path: str = "") -> dict[str,
                 "end_byte": finding.ast_finding.end_byte,
             },
         }
+    elif isinstance(finding, MaliciousFinding):
+        rel_path = _relativize(finding.file_path, base_path)
+        result["file_path"] = rel_path
+        result["file_hash"] = _get_file_hash(finding.file_path)
+        result["fragment_hash"] = _get_fragment_hash(finding.matched_text)
+        result["details"] = {
+            "file_path": rel_path,
+            "line_number": finding.line_number,
+            "pattern_id": finding.pattern_id,
+            "pattern_name": finding.pattern_name,
+            "matched_text": finding.matched_text,
+            "attack_category": finding.attack_category,
+            "original_severity": finding.severity,
+        }
 
     return result
 
@@ -297,6 +319,16 @@ def _dict_to_scored_finding(d: dict[str, Any]) -> ScoredFinding:
             code_snippet=details.get("code_snippet", ""),
             start_byte=details.get("start_byte", 0),
             end_byte=details.get("end_byte", 0),
+        )
+    elif finding_type == "MaliciousFinding":
+        finding = MaliciousFinding(
+            file_path=details.get("file_path", ""),
+            line_number=details.get("line_number", 0),
+            pattern_id=details.get("pattern_id", "unknown"),
+            pattern_name=details.get("pattern_name", "Unknown Pattern"),
+            matched_text=details.get("matched_text", ""),
+            severity=details.get("original_severity", "MEDIUM"),
+            attack_category=details.get("attack_category", "unknown")
         )
     else:
         # Fallback: create a minimal NLFinding

@@ -12,7 +12,7 @@ import tree_sitter_python as tspython
 import tree_sitter_javascript as tsjavascript
 from tree_sitter import Language, Parser, Node
 
-Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL", "DEFER"]
 
 RULES_DIR = Path(__file__).resolve().parent.parent / "rules"
 CREDENTIALS_PATH = RULES_DIR / "credentials.yaml"

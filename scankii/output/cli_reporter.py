@@ -22,6 +22,7 @@ _SEVERITY_COLORS = {
     "HIGH": "bold yellow",
     "MEDIUM": "bold dark_orange",
     "LOW": "bold blue",
+    "DEFER": "bold cyan",
 }
 
 

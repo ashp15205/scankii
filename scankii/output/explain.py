@@ -23,6 +23,7 @@ _SEVERITY_COLORS = {
     "HIGH": "bold yellow",
     "MEDIUM": "bold dark_orange",
     "LOW": "bold blue",
+    "DEFER": "bold cyan",
 }
 
 _SEVERITY_EMOJI = {
@@ -30,6 +31,7 @@ _SEVERITY_EMOJI = {
     "HIGH": "⚠️ ",
     "MEDIUM": "🔶",
     "LOW": "ℹ️ ",
+    "DEFER": "⏳",
 }
 
 # Arrow gradient colors for attack flow (white → yellow → orange → red)

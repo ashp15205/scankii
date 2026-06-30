@@ -8,7 +8,7 @@ from typing import Literal, Union
 from scankii.core.nl_analyzer import NLFinding
 from scankii.core.ast_analyzer import ASTFinding
 
-Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL", "DEFER"]
 
 _SEVERITY_ORDER = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 

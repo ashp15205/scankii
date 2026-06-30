@@ -20,6 +20,7 @@ _SEVERITY_TO_SARIF_LEVEL = {
     "HIGH": "error",
     "MEDIUM": "warning",
     "LOW": "note",
+    "DEFER": "note",
 }
 
 

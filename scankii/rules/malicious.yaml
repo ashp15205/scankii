@@ -161,3 +161,10 @@
   severity: CRITICAL
   attack_category: nested_schema_poisoning
   description: Prompt injection inside schema descriptions aiming to extract sensitive data (CVE-2026-25253)
+
+- id: authority-boundary-unverifiable
+  name: Payment Hop - Unverifiable Authority Boundary
+  pattern: '(?i)(?:amount_cap|recipient|expiry|guardrail_ref)'
+  severity: DEFER
+  attack_category: financial_hop
+  description: A financial hop boundary that requires a runtime witness to verify the mandate (Issue #226)

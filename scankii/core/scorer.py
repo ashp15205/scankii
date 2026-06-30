@@ -8,9 +8,10 @@ from typing import Literal, Union
 from scankii.core.nl_analyzer import NLFinding
 from scankii.core.ast_analyzer import ASTFinding
 from scankii.core.cross_modal import CrossModalFinding
+from scankii.core.patterns import MaliciousFinding
 
-Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-AnyFinding = Union[NLFinding, ASTFinding, CrossModalFinding]
+Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL", "DEFER"]
+AnyFinding = Union[NLFinding, ASTFinding, CrossModalFinding, MaliciousFinding]
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,12 @@ def score_finding(finding: AnyFinding) -> ScoredFinding:
     credential_type = _score_credential_type(finding)
     leakage_channel = _score_leakage_channel(finding)
     pattern_category = _score_pattern_category(finding)
+
+    if isinstance(finding, MaliciousFinding):
+        if finding.severity == "DEFER":
+            return ScoredFinding(finding=finding, score=0.0, severity="DEFER")
+        else:
+            return ScoredFinding(finding=finding, score=10.0, severity=finding.severity)
 
     composite = exploitability * credential_type * leakage_channel * pattern_category
     severity = _map_severity(composite)
@@ -61,6 +68,8 @@ def _score_exploitability(finding: AnyFinding) -> float:
         if finding.sink_category == "network":
             return 2.0
         return 1.5
+    if isinstance(finding, MaliciousFinding):
+        return 2.0
     # NLFinding is static analysis only
     return 1.0
 
@@ -123,6 +132,8 @@ def _get_variable_name(finding: AnyFinding) -> str:
                 "send", "store", "embed", "log", "post", "forward", "transmit", "pass"
             }:
                 return term
+    if isinstance(finding, MaliciousFinding):
+        return finding.pattern_id
     return ""
 
 
@@ -132,11 +143,15 @@ def _get_sink_category(finding: AnyFinding) -> str:
         return finding.sink_category
     if isinstance(finding, CrossModalFinding):
         return finding.ast_finding.sink_category
+    if isinstance(finding, MaliciousFinding):
+        return finding.attack_category
     return ""
 
 
 def _map_severity(score: float) -> Severity:
     """Map composite score to severity level."""
+    if score == 0.0:
+        return "DEFER"
     if score > 5.0:
         return "CRITICAL"
     if score > 3.5:
