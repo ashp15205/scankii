@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scankii"
-version = "1.2.1"
+version = "1.2.2"
 description = "Scan LLM agent skill directories for credential leakage"
 readme = "README.md"
 requires-python = ">=3.10"
