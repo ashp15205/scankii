@@ -2,10 +2,6 @@
   
 # 🛡️ Scankii
 
-[![PyPI version](https://img.shields.io/pypi/v/scankii.svg?style=for-the-badge&color=blue)](https://pypi.org/project/scankii/)
-[![Python versions](https://img.shields.io/pypi/pyversions/scankii.svg?style=for-the-badge)](https://pypi.org/project/scankii/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge)](https://github.com/ashp15205/scankii/actions)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/ashishp05)
 
 **A fast, local-first static security scanner built exclusively for AI Agents and the tools they use.**
