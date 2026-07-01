@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "scankii"
 version = "1.2.2"
-description = "Scan LLM agent skill directories for credential leakage"
+description = "SAST Security Scanner for LLM Agents: Detect Prompt Injections & Data Leaks in AI Workflows"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
