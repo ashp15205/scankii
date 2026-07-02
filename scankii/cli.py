@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Literal
 
@@ -44,16 +43,17 @@ def scan(path: Path, output_format: OutputFormat, run_explain: bool, run_resolve
     """Scan a skill directory for security findings."""
     from scankii.scanner import scan_directory
     from scankii.output.cli_reporter import render_cli_report
-    from scankii.output.sarif import to_sarif
     from scankii.output.explain import explain_scan_result
-
+    from scankii.output.json_reporter import save_json_report
+    from scankii.output.sarif import save_sarif_report
     result = scan_directory(path)
 
     if output_format == "json":
-        click.echo(result.to_json())
+        output_path = save_json_report(result)
+        click.echo(f"JSON report saved to {output_path}")
     elif output_format == "sarif":
-        import json
-        click.echo(json.dumps(to_sarif(result), indent=2))
+        output_path = save_sarif_report(result)
+        click.echo(f"SARIF report saved to {output_path}")
     else:
         render_cli_report(result)
         if run_explain:
