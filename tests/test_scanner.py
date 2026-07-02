@@ -10,6 +10,9 @@ import pytest
 from scankii.scanner import ScanResult, scan_directory, load_scan_result
 
 VULNERABLE_SKILL_DIR = Path(__file__).resolve().parent.parent / "examples" / "vulnerable-skill"
+UNRESOLVED_SINK_SKILL_DIR = (
+    Path(__file__).resolve().parent.parent / "examples" / "unresolved-sink-skill"
+)
 
 
 class TestScanDirectory:
@@ -39,6 +42,16 @@ class TestScanDirectory:
             finding_types.add(type(sf.finding).__name__)
         # Should have at least AST or CrossModal findings
         assert "ASTFinding" in finding_types or "CrossModalFinding" in finding_types
+
+    def test_scan_detects_unresolved_attribute_sink(self):
+        """Unknown module method calls with credentials must still be flagged."""
+        result = scan_directory(UNRESOLVED_SINK_SKILL_DIR)
+        assert result.summary["total"] >= 1
+        ast_findings = [
+            sf for sf in result.findings if type(sf.finding).__name__ == "ASTFinding"
+        ]
+        assert ast_findings, "Expected AST finding for unresolved attribute sink"
+        assert ast_findings[0].finding.sink_category == "unknown"
 
 
 class TestSerialization:

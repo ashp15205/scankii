@@ -388,8 +388,16 @@ def _match_sink(
         if "." in sink_key and func_text.endswith("." + sink_key.split(".")[-1]):
             return name, cat, sev, func_node.start_byte, func_node.end_byte
 
-    # If it didn't match a safe builtin or a known sink, it is an unresolved boundary
-    return f"Unknown function '{func_text}'", "unknown", 1.0, func_node.start_byte, func_node.end_byte
+    if func_node.type in ("attribute", "member_expression"):
+        return (
+            f"Unknown function '{func_text}'",
+            "unknown",
+            1.0,
+            func_node.start_byte,
+            func_node.end_byte,
+        )
+
+    return None
 
 
 def _extract_arguments(call_node: Node, source: str, lang: str) -> tuple[list[str], list[str]]:

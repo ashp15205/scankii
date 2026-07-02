@@ -54,6 +54,24 @@ PYTHON_PARAM_CREDENTIAL = textwrap.dedent("""\
 """)
 
 
+PYTHON_INTERNAL_HELPER = textwrap.dedent("""\
+    api_key = "sk-proj-abc123def456ghi789jkl"
+
+    def run():
+        validate_credentials(api_key)
+""")
+
+
+PYTHON_UNKNOWN_MODULE_SINK = textwrap.dedent("""\
+    import unknown_module
+
+    api_key = "sk-proj-abc123def456ghi789jkl"
+
+    def main():
+        unknown_module.do_something(api_key)
+""")
+
+
 # ---------- JavaScript test fixtures ----------
 
 
@@ -137,6 +155,23 @@ class TestPythonAnalysis:
         assert f.column >= 0
         assert f.severity in ("LOW", "MEDIUM", "HIGH", "CRITICAL")
         assert f.code_snippet  # non-empty
+
+    def test_no_finding_for_internal_helper_call(self):
+        """Bare local calls must not be treated as credential sinks."""
+        findings = analyze_ast_from_string(
+            PYTHON_INTERNAL_HELPER, "python", "test.py"
+        )
+        assert len(findings) == 0
+
+    def test_flags_unknown_attribute_sink(self):
+        """External attribute calls with credentials remain unresolved boundaries."""
+        findings = analyze_ast_from_string(
+            PYTHON_UNKNOWN_MODULE_SINK, "python", "test.py"
+        )
+        assert len(findings) >= 1
+        f = findings[0]
+        assert f.sink_category == "unknown"
+        assert "unknown_module.do_something" in f.sink_name
 
 
 # ---------- JavaScript tests ----------
